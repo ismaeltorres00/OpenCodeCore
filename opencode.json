@@ -1,0 +1,75 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "anthropic/claude-sonnet-4-5",
+  "small_model": "anthropic/claude-haiku-4-5",
+  "enabled_providers": [
+    "anthropic"
+  ],
+  "default_agent": "build",
+  "subagent_depth": 1,
+  "skills": [
+    "https://gitlab.grupocdv.com/grupo-cdv/opencode-org-config/-/raw/main/skills/"
+  ],
+  "instructions": [
+    "https://gitlab.grupocdv.com/grupo-cdv/opencode-org-config/-/raw/main/AGENTS.md"
+  ],
+  "permission": {
+    "edit": "allow",
+    "bash": {
+      "*": "allow",
+      "rm -rf *": "deny",
+      "git push --force*": "ask"
+    },
+    "webfetch": "ask",
+    "external_directory": "ask",
+    "skill": {
+      "*": "deny"
+    }
+  },
+  "tools": {
+    "write": true,
+    "edit": true,
+    "bash": true
+  },
+  "mcp": {
+    "gitlab": {
+      "type": "remote",
+      "url": "https://gitlab.grupocdv.com/api/v4/mcp",
+      "enabled": false
+    }
+  },
+  "formatter": true,
+  "lsp": true,
+  "share": "manual",
+  "autoupdate": true,
+  "compaction": {
+    "auto": true,
+    "prune": false
+  },
+  "watcher": {
+    "ignore": [
+      "node_modules/**",
+      "bin/**",
+      "obj/**",
+      ".git/**",
+      "**/*.Designer.cs"
+    ]
+  },
+  "agent": {
+    "sabre-integrator": {
+      "description": "Especialista en integraciones REST con Sabre: pricing, disponibilidad, revalidación y booking",
+      "prompt": "Eres un agente especializado en integraciones REST con Sabre para el equipo de backend .NET.\nDominas los flujos de Air Availability, Bargain Finder Max, Price Quote/Revalidation y Booking.\nSigue siempre las convenciones descritas en las skills sabre-rest-pricing, dotnet-backend-standards y airline-error-handling.\nNunca propongas un booking directo sin pasar por revalidación de precio previa.\nAl generar o revisar código, respeta la arquitectura por capas del equipo: los clientes Sabre viven solo en Infrastructure, nunca se referencian desde Api o Domain.",
+      "mode": "subagent"
+    },
+    "amadeus-integrator": {
+      "description": "Especialista en integraciones REST con Amadeus Self-Service/NDC: offers, pricing y orders",
+      "prompt": "Eres un agente especializado en integraciones REST con Amadeus Self-Service/NDC para el equipo de backend .NET.\nDominas los flujos de Flight Offers Search, Flight Offers Price y Flight Create Orders.\nSigue siempre las convenciones descritas en las skills amadeus-offer-management, dotnet-backend-standards y airline-error-handling.\nNunca propongas crear un order con el offer original del search; siempre debe pasar por Offers Price primero.\nAl generar o revisar código, respeta la arquitectura por capas del equipo: los clientes Amadeus viven solo en Infrastructure, nunca se referencian desde Api o Domain.",
+      "mode": "subagent"
+    },
+    "airgateway-integrator": {
+      "description": "Especialista en integraciones REST con AirGateway como agregador multi-GDS",
+      "prompt": "Eres un agente especializado en integraciones REST con AirGateway (agregador multi-GDS) para el equipo de backend .NET.\nEntiendes que AirGateway normaliza estructura pero no semántica completa entre proveedores subyacentes.\nSigue siempre las convenciones descritas en las skills airgateway-integration, dotnet-backend-standards y airline-error-handling.\nNunca trates un ancillary como garantizado hasta que el booking lo confirme explícitamente.\nAl generar o revisar código, respeta la arquitectura por capas del equipo: el cliente AirGateway vive solo en Infrastructure, con su propio circuit breaker independiente de los clientes directos.",
+      "mode": "subagent"
+    }
+  }
+}

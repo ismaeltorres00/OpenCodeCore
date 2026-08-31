@@ -1,0 +1,42 @@
+stages:
+  - validate
+
+validate-skills:
+  stage: validate
+  image: alpine:3.20
+  before_script:
+    - apk add --no-cache bash jq
+  script:
+    - chmod +x scripts/validate-skills.sh
+    - ./scripts/validate-skills.sh
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+validate-json:
+  stage: validate
+  image: alpine:3.20
+  before_script:
+    - apk add --no-cache jq
+  script:
+    - jq empty .well-known/opencode
+    - jq empty opencode.json
+    - jq empty skills/index.json
+    - jq -S . .well-known/opencode > /tmp/wellknown.json
+    - jq -S . opencode.json > /tmp/opencode.json
+    - diff /tmp/wellknown.json /tmp/opencode.json || (echo "ERROR: .well-known/opencode y opencode.json deben ser idénticos (regenera con 'node gen_wellknown.js')" && exit 1)
+    - echo "JSON válido"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+validate-structure:
+  stage: validate
+  image: alpine:3.20
+  script:
+    - test -d commands || (echo "ERROR: falta commands/ (nombre real que usa OpenCode, plural)" && exit 1)
+    - test -d command && (echo "ERROR: existe command/ (layout viejo, singular) junto a commands/ — elimínalo" && exit 1) || true
+    - echo "Estructura OK"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'

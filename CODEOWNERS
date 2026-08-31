@@ -1,0 +1,14 @@
+# Revisión obligatoria por dominio antes de mergear a main.
+# Sustituir los @usuarios por los owners reales de cada integración.
+
+skills/sabre-*/               @owner-sabre
+skills/amadeus-*/             @owner-amadeus
+skills/airgateway-*/          @owner-airgateway
+skills/dotnet-*/               @tech-lead
+skills/airline-error-*/        @tech-lead
+
+.well-known/opencode         @tech-lead
+opencode.json                @tech-lead
+skills/index.json            @tech-lead
+gen_wellknown.js             @tech-lead
+scripts/bootstrap.sh         @tech-lead

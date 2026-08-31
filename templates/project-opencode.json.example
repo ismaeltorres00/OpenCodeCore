@@ -1,0 +1,44 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+
+  "_comentario": "Copiar como opencode.json en la raíz del proyecto (o .opencode/opencode.json). Todo lo que no se toque aquí hereda del opencode.json de opencode-org-config, que cada dev tiene cargado vía OPENCODE_CONFIG (ver README secciones 0 y 3 — no es un remote config automático). Borra las claves de ejemplo que no necesites.",
+
+  "permission": {
+    "skill": {
+      "dotnet-backend-standards": "allow",
+      "airline-error-handling": "allow",
+
+      "sabre-rest-pricing": "allow",
+
+      "amadeus-offer-management": "deny",
+      "airgateway-integration": "deny"
+    }
+  },
+
+  "agent": {
+    "sabre-integrator": "enabled",
+    "amadeus-integrator": "disabled",
+    "airgateway-integrator": "disabled"
+  },
+
+  "_ejemplo_mcp": "Si este proyecto necesita el MCP de GitLab que la org define deshabilitado por defecto, actívalo así:",
+  "mcp": {
+    "gitlab": {
+      "type": "remote",
+      "url": "https://gitlab.grupocdv.com/api/v4/mcp",
+      "enabled": true
+    }
+  },
+
+  "_ejemplo_instrucciones": "Instrucciones propias del proyecto: se SUMAN al AGENTS.md organizacional, no lo sustituyen",
+  "instructions": ["./AGENTS.md", "./docs/api-conventions.md"],
+
+  "_ejemplo_model_override": "Solo si este proyecto concreto necesita un modelo distinto al default de la org",
+  "model": "anthropic/claude-sonnet-4-5",
+
+  "_ejemplo_tools": "Ejemplo: restringir herramientas para un proyecto de solo consulta/reporting",
+  "tools": {
+    "write": true,
+    "edit": true
+  }
+}

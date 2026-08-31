@@ -1,0 +1,29 @@
+{
+  "skills": [
+    {
+      "name": "dotnet-backend-standards",
+      "version": "1",
+      "files": ["dotnet-backend-standards.md"]
+    },
+    {
+      "name": "sabre-rest-pricing",
+      "version": "1",
+      "files": ["sabre-rest-pricing.md"]
+    },
+    {
+      "name": "amadeus-offer-management",
+      "version": "1",
+      "files": ["amadeus-offer-management.md"]
+    },
+    {
+      "name": "airgateway-integration",
+      "version": "1",
+      "files": ["airgateway-integration.md"]
+    },
+    {
+      "name": "airline-error-handling",
+      "version": "1",
+      "files": ["airline-error-handling.md"]
+    }
+  ]
+}
