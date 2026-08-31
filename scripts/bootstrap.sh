@@ -18,7 +18,7 @@
 # re-ejecutar en cualquier momento (idempotente) para sincronizar cambios.
 set -euo pipefail
 
-ORG_CONFIG_REPO="${OPENCODE_ORG_CONFIG_REPO:-https://gitlab.grupocdv.com/grupo-cdv/opencode-org-config.git}"
+ORG_CONFIG_REPO="${OPENCODE_ORG_CONFIG_REPO:-https://github.com/ismaeltorres00/OpenCodeCore.git}"
 CLONE_DIR="${OPENCODE_ORG_CONFIG_DIR:-$HOME/.opencode-org-config}"
 GLOBAL_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/opencode"
 

@@ -8,10 +8,10 @@
   "default_agent": "build",
   "subagent_depth": 1,
   "skills": [
-    "https://gitlab.grupocdv.com/grupo-cdv/opencode-org-config/-/raw/main/skills/"
+    "https://ismaeltorres00.github.io/OpenCodeCore/skills/"
   ],
   "instructions": [
-    "https://gitlab.grupocdv.com/grupo-cdv/opencode-org-config/-/raw/main/AGENTS.md"
+    "https://ismaeltorres00.github.io/OpenCodeCore/AGENTS.md"
   ],
   "permission": {
     "edit": "allow",

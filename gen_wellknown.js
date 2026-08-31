@@ -1,7 +1,9 @@
 const fs = require("fs");
 const path = require("path");
 
-const BASE_URL = "https://gitlab.grupocdv.com/grupo-cdv/opencode-org-config/-/raw/main";
+// De momento apuntando a GitHub Pages para probar (repo: ismaeltorres00/OpenCodeCore).
+// Cuando esto vuelva a vivir en el GitLab del equipo, cambiar de nuevo a la URL raw de GitLab.
+const BASE_URL = "https://ismaeltorres00.github.io/OpenCodeCore";
 
 const sabrePrompt = `Eres un agente especializado en integraciones REST con Sabre para el equipo de backend .NET.
 Dominas los flujos de Air Availability, Bargain Finder Max, Price Quote/Revalidation y Booking.

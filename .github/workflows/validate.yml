@@ -1,0 +1,41 @@
+name: validate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  validate-json:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: opencode.json y .well-known/opencode deben ser JSON válido e idénticos
+        run: |
+          jq empty .well-known/opencode
+          jq empty opencode.json
+          jq empty skills/index.json
+          jq -S . .well-known/opencode > /tmp/wellknown.json
+          jq -S . opencode.json > /tmp/opencode.json
+          diff /tmp/wellknown.json /tmp/opencode.json
+          echo "JSON válido"
+
+  validate-skills:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: skills/index.json sincronizado con los ficheros reales
+        run: |
+          chmod +x scripts/validate-skills.sh
+          ./scripts/validate-skills.sh
+
+  validate-structure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: commands/ (plural) presente, sin restos del layout viejo
+        run: |
+          test -d commands || { echo "ERROR: falta commands/ (nombre real que usa OpenCode, plural)"; exit 1; }
+          if [ -d command ]; then echo "ERROR: existe command/ (layout viejo, singular) junto a commands/"; exit 1; fi
+          test -f .nojekyll || { echo "ERROR: falta .nojekyll — sin él, GitHub Pages ignora .well-known/ y reprocesa los .md con Jekyll"; exit 1; }
+          echo "Estructura OK"

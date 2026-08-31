@@ -4,6 +4,10 @@ Repositorio central de configuración de OpenCode para el equipo de backend .NET
 
 Fuente única de verdad. Los proyectos individuales solo sobreescriben lo puntual (allow-lists, MCP que necesiten, instrucciones propias) — no redefinen nada desde cero.
 
+> **Estado actual: desplegado en GitHub Pages para probar.**
+> Repo: [`ismaeltorres00/OpenCodeCore`](https://github.com/ismaeltorres00/OpenCodeCore) · Pages: `https://ismaeltorres00.github.io/OpenCodeCore/`
+> Cuando esto pase a ser el config real del equipo (GitLab u otro sitio), solo hace falta cambiar `BASE_URL` en `gen_wellknown.js` y `ORG_CONFIG_REPO` en `scripts/bootstrap.sh`, regenerar (`node gen_wellknown.js`) y hacer push — nada más en el repo depende de dónde esté alojado. Ver sección 1.5 para lo específico de GitHub Pages (obligatorio: `.nojekyll`).
+
 ## 0. Cómo funciona la jerarquía (importante entenderlo antes de tocar nada)
 
 OpenCode carga config en este orden, cada capa puede sobreescribir claves de la anterior (se **mergea**, no se reemplaza el fichero entero):
@@ -21,29 +25,48 @@ Esto significa: si el config de org (capa 3) deniega una skill y el proyecto la 
 
 ## 1. Antes de nada: sustituir la URL base
 
-Todos los ficheros de este repo referencian:
+Todos los ficheros de este repo referencian una sola constante (hoy, la URL de GitHub Pages de este test):
 
 ```
-https://gitlab.grupocdv.com/grupo-cdv/opencode-org-config/-/raw/main
+https://ismaeltorres00.github.io/OpenCodeCore
 ```
 
-Si el namespace o el nombre del repo cambian, actualizar esa constante en `gen_wellknown.js` (regenera `.well-known/opencode` y `opencode.json`) y en `scripts/bootstrap.sh` (`ORG_CONFIG_REPO`).
+Si el sitio de alojamiento cambia (por ejemplo al pasar esto al GitLab del equipo), actualizar esa constante en `gen_wellknown.js` (`BASE_URL`, regenera `.well-known/opencode` y `opencode.json`) y en `scripts/bootstrap.sh` (`ORG_CONFIG_REPO`, que es la URL de **clone** del repo, no la de Pages — son cosas distintas, ver 1.5).
+
+## 1.5. Específico de GitHub Pages (leer si estás probando esto en Pages)
+
+GitHub Pages sirve el contenido del repo tal cual **excepto** que por defecto lo pasa por Jekyll antes, y Jekyll:
+
+- **ignora cualquier fichero/carpeta que empiece por `.`** — así que `.well-known/opencode` no se publicaría nunca.
+- **procesa los `.md` con frontmatter YAML** (justo el formato de las skills) como si fueran páginas del site, intentando convertirlos a HTML en vez de servir el markdown tal cual — rompería lo que OpenCode espera descargar.
+
+Por eso el repo incluye un fichero **`.nojekyll`** vacío en la raíz — le dice a GitHub Pages que sirva todo como ficheros estáticos, sin pasar por Jekyll. Sin él, nada de esto funciona en Pages. `.github/workflows/validate.yml` falla el build si `.nojekyll` desaparece.
+
+Pasos para activar Pages en el repo (una sola vez, vía web, no automatizable sin `gh` autenticado):
+
+1. `github.com/ismaeltorres00/OpenCodeCore` → **Settings** → **Pages**.
+2. **Build and deployment → Source**: `Deploy from a branch`.
+3. **Branch**: `main`, carpeta `/ (root)` → **Save**.
+4. Espera 1-2 min al primer deploy (pestaña **Actions** del repo muestra el job `pages build and deployment`).
+
+Nota: `opencode auth login` **no interviene aquí para nada** — esto es solo alojamiento HTTP estático, no un mecanismo de config de OpenCode. Cómo llega la config a cada dev está explicado en la sección 3.
 
 ## 2. Verificar que el endpoint sirve correctamente
 
 Esto solo es necesario si quieres aprovechar el catálogo de skills vía HTTP (sección 6) además del bootstrap local. `opencode.json` y `.well-known/opencode` no necesitan servirse por HTTP para que el bootstrap funcione — se leen del clon local.
 
 ```bash
-curl -I https://gitlab.grupocdv.com/grupo-cdv/opencode-org-config/-/raw/main/skills/index.json
-curl -s  https://gitlab.grupocdv.com/grupo-cdv/opencode-org-config/-/raw/main/skills/index.json | jq .
+curl -I https://ismaeltorres00.github.io/OpenCodeCore/skills/index.json
+curl -s  https://ismaeltorres00.github.io/OpenCodeCore/skills/index.json | jq .
+curl -s  https://ismaeltorres00.github.io/OpenCodeCore/.well-known/opencode | jq .
 ```
 
-Debe devolver `200` y JSON parseable. Si el repo es privado, resolver antes la sección 9.
+Debe devolver `200` y JSON parseable. Si tarda en devolver `200` justo después de activar Pages, espera al primer deploy (sección 1.5). Si el repo es privado, ver sección 9.
 
 ## 3. Onboarding de un dev (una sola vez)
 
 ```bash
-curl -s https://gitlab.grupocdv.com/grupo-cdv/opencode-org-config/-/raw/main/scripts/bootstrap.sh | bash
+curl -s https://ismaeltorres00.github.io/OpenCodeCore/scripts/bootstrap.sh | bash
 ```
 
 (O clona el repo y ejecuta `scripts/bootstrap.sh` directamente si prefieres revisar el script antes de correrlo — recomendado la primera vez.)
@@ -149,13 +172,16 @@ commands/
 
 No hay mecanismo de fuente HTTP para comandos (solo las skills lo soportan). `scripts/bootstrap.sh` copia `commands/*.md` a `~/.config/opencode/commands/` como parte del onboarding — cada dev los recibe automáticamente al ejecutar el script, sin pasos manuales.
 
-## 9. Si el repo de GitLab es privado
+## 9. Si el repo debe ser privado
 
-Solo relevante si quieres el catálogo de skills por HTTP (sección 6) o `curl`/CI accediendo al raw file sin auth interactiva. **No bloquea el onboarding** (sección 3), que funciona con `git clone`/`git pull` autenticado normal.
+GitHub Pages solo sirve repos **privados** con plan GitHub Pro, Team o Enterprise Cloud — en plan gratuito, Pages exige que el repo sea público. Esto solo afecta al catálogo de skills por HTTP y a `curl`/CI accediendo a los ficheros sin auth (sección 2/6). **No bloquea el onboarding** (sección 3), que puede seguir usando `git clone`/`git pull` autenticado normal contra un repo privado aunque Pages no esté activo.
 
-1. **Deploy token de solo lectura** a nivel de proyecto GitLab — opción recomendada, para exponer `skills/` vía HTTP anónimo.
-2. Exponer este repo de config como público-interno, separado de cualquier repo de código real.
-3. Si no se resuelve ninguna de las dos: el bootstrap sigue funcionando igual (usa `git clone` autenticado), simplemente no tendrás el refresco automático de skills sin re-ejecutar el script.
+Opciones si el contenido no puede ser público:
+1. Repo privado + plan que soporte Pages privado.
+2. Repo de config separado, público-interno, distinto de cualquier repo de código real (los `.md` de este repo son estándares/prompts, no secretos — normalmente asumible).
+3. Sin Pages en absoluto: el bootstrap sigue funcionando igual (usa `git clone` autenticado), simplemente sin el catálogo HTTP de skills — pierdes el refresco sin re-ejecutar el script, no la funcionalidad.
+
+(Si esto vuelve a vivir en GitLab del equipo en vez de GitHub Pages, la vía allí es un deploy token de solo lectura a nivel de proyecto — ver historial del repo antes de este cambio.)
 
 ## 10. Contribuir un skill, agente o comando nuevo
 
@@ -169,6 +195,7 @@ Solo relevante si quieres el catálogo de skills por HTTP (sección 6) o `curl`/
 ## 11. Estructura completa del repo
 
 ```
+.nojekyll                     → obligatorio para GitHub Pages: sirve todo como estático, sin pasar por Jekyll (ver 1.5)
 .well-known/opencode          → mismo contenido que opencode.json, para un futuro Enterprise/SSO (ver aviso sección 0)
 opencode.json                 → config real que cada dev carga hoy vía OPENCODE_CONFIG: modelo, permisos, agentes, MCP, instructions, tools, etc.
 AGENTS.md                     → instrucciones organizacionales, cargadas siempre vía "instructions"
@@ -179,5 +206,6 @@ gen_wellknown.js              → genera opencode.json y .well-known/opencode (e
 scripts/bootstrap.sh          → onboarding/actualización de un dev (clona, sincroniza commands/skills, configura OPENCODE_CONFIG)
 scripts/validate-skills.sh    → validación ejecutada en CI
 CODEOWNERS                    → revisión obligatoria por dominio
-.gitlab-ci.yml                → valida JSON, consistencia índice↔ficheros y estructura en cada MR
+.gitlab-ci.yml                → valida lo mismo que .github/workflows/validate.yml, para cuando esto viva en GitLab
+.github/workflows/validate.yml → CI en GitHub Actions: JSON válido, índice↔ficheros, estructura y presencia de .nojekyll
 ```
