@@ -2,10 +2,10 @@
 # Valida que skills/index.json esté sincronizado con los ficheros reales
 # y que cada skill cumpla el formato mínimo exigido por el equipo.
 #
-# Layout exigido por el mecanismo de fuente HTTP real de OpenCode
-# (opencode.ai/v2/docs/skills): cada skill vive en su propia carpeta,
-# fetch pattern <base-url>/<skill-name>/<fichero>. Por eso el fichero
-# de cada skill es skills/<name>/<name>.md, NO skills/<name>.md.
+# Layout exigido por el loader HTTP real de OpenCode (confirmado en runtime
+# con --log-level DEBUG: "skill entry missing SKILL.md" si no se cumple):
+# cada skill vive en su propia carpeta, y el fichero se llama SKILL.md a
+# secas — NO <name>.md, aunque el fetch pattern sea <base-url>/<name>/<file>.
 set -euo pipefail
 
 SKILLS_DIR="skills"
@@ -23,7 +23,7 @@ names_in_index=$(jq -r '.skills[].name' "$INDEX_FILE" | tr -d '\r')
 
 for name in $names_in_index; do
   dir="${SKILLS_DIR}/${name}"
-  file="${dir}/${name}.md"
+  file="${dir}/SKILL.md"
 
   if [ ! -d "$dir" ]; then
     echo "ERROR: ${name} está en index.json pero no existe la carpeta ${dir}/"
@@ -32,7 +32,7 @@ for name in $names_in_index; do
   fi
 
   if [ ! -f "$file" ]; then
-    echo "ERROR: ${name} está en index.json pero no existe ${file}"
+    echo "ERROR: ${name} está en index.json pero no existe ${file} (el fichero DEBE llamarse SKILL.md, no ${name}.md)"
     FAIL=1
     continue
   fi
@@ -59,6 +59,10 @@ for name in $names_in_index; do
 
   # cada entrada de index.json declara "files": deben existir todos, dentro de la carpeta de la skill
   files=$(jq -r --arg n "$name" '.skills[] | select(.name==$n) | .files[]' "$INDEX_FILE" | tr -d '\r')
+  if ! echo "$files" | grep -qx "SKILL.md"; then
+    echo "ERROR: index.json para ${name} no incluye \"SKILL.md\" en 'files' — OpenCode descarta la skill entera sin ese fichero exacto"
+    FAIL=1
+  fi
   while IFS= read -r f; do
     [ -z "$f" ] && continue
     if [ ! -f "${dir}/${f}" ]; then

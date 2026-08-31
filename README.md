@@ -101,7 +101,7 @@ Verifica que se resolvió bien sin gastar tokens: `opencode debug config` (confi
 | `model` / `small_model` | Modelo por defecto del equipo (`claude-sonnet-4-5` / `claude-haiku-4-5`) | Proyecto, si un caso concreto lo necesita |
 | `enabled_providers` | Solo Anthropic autorizado — evita que alguien cargue credenciales de otro proveedor por error | No pensado para overridear sin aprobación |
 | `default_agent` / `subagent_depth` | Agente por defecto (`build`) y profundidad máx. de subagentes (evita cadenas descontroladas de coste) | Proyecto |
-| `skills` | Catálogo HTTP (ver sección 6) — opcional, complementa las skills ya copiadas localmente por el bootstrap | — |
+| `skills` | Catálogo HTTP (ver sección 6) — objeto `{urls: [...]}`, única vía (no hay copia local de respaldo) | — |
 | `instructions` | `AGENTS.md` de este repo, cargado siempre | Proyecto puede añadir instrucciones propias (se suman, no sustituyen) |
 | `permission` | Ver sección 5 | Proyecto |
 | `tools` | `write`/`edit`/`bash` activados por defecto | Proyecto (ej. deshabilitar `write` en repos de solo análisis) |
@@ -143,26 +143,30 @@ Cada proyecto puede añadir reglas más finas en su `opencode.json` (ver plantil
 skills/
 ├── index.json                              ← lista name + version + files de cada skill
 ├── dotnet-backend-standards/
-│   └── dotnet-backend-standards.md
+│   └── SKILL.md
 ├── sabre-rest-pricing/
-│   └── sabre-rest-pricing.md
+│   └── SKILL.md
 ├── amadeus-offer-management/
-│   └── amadeus-offer-management.md
+│   └── SKILL.md
 ├── airgateway-integration/
-│   └── airgateway-integration.md
+│   └── SKILL.md
 └── airline-error-handling/
-    └── airline-error-handling.md
+    └── SKILL.md
 ```
 
-**Cada skill vive en su propia carpeta** — no es un capricho de estilo: el fetch HTTP real de OpenCode pide los ficheros en `<base-url>/<skill-name>/<fichero>`, así que un `.md` suelto directamente bajo `skills/` no se resolvería. `scripts/validate-skills.sh` falla en CI si aparece un `.md` suelto (layout viejo).
+**Dos reglas, verificadas en runtime (no solo en documentación) con `opencode debug skill --log-level DEBUG`:**
+1. **Cada skill vive en su propia carpeta** — el fetch HTTP real de OpenCode pide los ficheros en `<base-url>/<skill-name>/<fichero>`.
+2. **El fichero se llama `SKILL.md` a secas** — no `<nombre>.md`. Con el nombre equivocado, OpenCode no da error: descubre la skill, la descarta en silencio (log: `"skill entry missing SKILL.md"`) y no aparece en ningún sitio. Así es como nos pasó la primera vez.
+
+`scripts/validate-skills.sh` falla en CI si falta `SKILL.md`, si `index.json` no lo declara en `"files"`, o si aparece un `.md` suelto directamente bajo `skills/` (layout viejo).
 
 `index.json` sigue el formato exacto que exige OpenCode para fuentes HTTP:
 
 ```json
-{ "skills": [ { "name": "sabre-rest-pricing", "version": "1", "files": ["sabre-rest-pricing.md"] } ] }
+{ "skills": [ { "name": "sabre-rest-pricing", "version": "2", "files": ["SKILL.md"] } ] }
 ```
 
-Al modificar un skill, **incrementa su `version`** — es la señal que le dice a OpenCode que refresque la copia cacheada en cada dev que use la fuente HTTP (`"skills": ["<url>/skills/"]` en `opencode.json`, ya incluido).
+Al modificar un skill, **incrementa su `version`** — es la señal que le dice a OpenCode que refresque la copia cacheada en cada dev que use la fuente HTTP (`"skills": {"urls": ["<url>/skills/"]}` en `opencode.json`, ya incluido — nota que es un objeto `{paths, urls}`, no un array plano; un array ahí se ignora sin error).
 
 Nota: las skills viven **solo** en el catálogo HTTP — `scripts/bootstrap.sh`/`.ps1` ya no las copian a mano a `~/.config/opencode/skills/`. Antes lo hacían además de declarar la fuente HTTP, y los dos mecanismos escribiendo en la misma carpeta se pisaban entre sí (una skill copiada a mano desaparecía sola). Un solo mecanismo, más simple de entender y sin ese conflicto: **si el repo no se sirve por HTTP (sección 9), las skills no funcionan**, no hay plan B silencioso.
 
@@ -197,7 +201,7 @@ Opciones si el contenido no puede ser público:
 
 ## 10. Contribuir un skill, agente o comando nuevo
 
-1. Skill nuevo: `skills/<nombre>/<nombre>.md` (frontmatter `name`+`description`, mínimo 20 caracteres, `name` en minúsculas/guiones, coincide con el fichero y con el nombre de la carpeta) + entrada en `skills/index.json`.
+1. Skill nuevo: `skills/<nombre>/SKILL.md` (frontmatter `name`+`description`, mínimo 20 caracteres, `name` en minúsculas/guiones, coincide con el nombre de la carpeta) + entrada en `skills/index.json` con `"files": ["SKILL.md"]`.
 2. Agente nuevo: añadir bloque en `agent` dentro de `gen_wellknown.js` y regenerar (`node gen_wellknown.js`, escribe `.well-known/opencode` y `opencode.json`).
 3. Comando nuevo: `commands/<nombre>.md` con frontmatter `description`/`agent`/`model`.
 4. Abrir MR — CODEOWNERS exige revisión del owner del dominio correspondiente.
@@ -211,7 +215,7 @@ Opciones si el contenido no puede ser público:
 .well-known/opencode          → mismo contenido que opencode.json, para un futuro Enterprise/SSO (ver aviso sección 0)
 opencode.json                 → config real que cada dev carga hoy vía OPENCODE_CONFIG: modelo, permisos, agentes, MCP, instructions, tools, etc.
 AGENTS.md                     → instrucciones organizacionales, cargadas siempre vía "instructions"
-skills/                       → catálogo de skills, una carpeta por skill (index.json + <name>/<name>.md)
+skills/                       → catálogo de skills, una carpeta por skill (index.json + <name>/SKILL.md)
 commands/                     → comandos custom compartidos (nombre real que descubre OpenCode, plural)
 templates/                    → plantilla completa de opencode.json por proyecto, con todos los overrides posibles
 gen_wellknown.js              → genera opencode.json y .well-known/opencode (editar aquí, no los JSON a mano)

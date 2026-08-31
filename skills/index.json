@@ -2,28 +2,28 @@
   "skills": [
     {
       "name": "dotnet-backend-standards",
-      "version": "1",
-      "files": ["dotnet-backend-standards.md"]
+      "version": "2",
+      "files": ["SKILL.md"]
     },
     {
       "name": "sabre-rest-pricing",
-      "version": "1",
-      "files": ["sabre-rest-pricing.md"]
+      "version": "2",
+      "files": ["SKILL.md"]
     },
     {
       "name": "amadeus-offer-management",
-      "version": "1",
-      "files": ["amadeus-offer-management.md"]
+      "version": "2",
+      "files": ["SKILL.md"]
     },
     {
       "name": "airgateway-integration",
-      "version": "1",
-      "files": ["airgateway-integration.md"]
+      "version": "2",
+      "files": ["SKILL.md"]
     },
     {
       "name": "airline-error-handling",
-      "version": "1",
-      "files": ["airline-error-handling.md"]
+      "version": "2",
+      "files": ["SKILL.md"]
     }
   ]
 }
