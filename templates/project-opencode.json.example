@@ -15,10 +15,10 @@
     }
   },
 
+  "_ejemplo_agentes": "El valor de cada agente tiene que ser el objeto AgentConfig completo (o un subconjunto) — NO un string 'enabled'/'disabled', eso no es válido contra el schema real de OpenCode (opencode.ai/config.json). El campo real para apagar un agente es 'disable: true'. Como sabre-integrator ya viene definido entero desde la org (prompt, description, mode), aquí solo hace falta la clave que quieres tocar: el resto se mergea con lo que ya trae.",
   "agent": {
-    "sabre-integrator": "enabled",
-    "amadeus-integrator": "disabled",
-    "airgateway-integrator": "disabled"
+    "amadeus-integrator": { "disable": true },
+    "airgateway-integrator": { "disable": true }
   },
 
   "_ejemplo_mcp": "Si este proyecto necesita el MCP de GitLab que la org define deshabilitado por defecto, actívalo así:",

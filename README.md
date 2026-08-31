@@ -158,7 +158,7 @@ Nota: `scripts/bootstrap.sh` **ya copia** `skills/<name>/` a `~/.config/opencode
 
 Tres agentes tipo `subagent` (invocables desde el agente principal, no como modo por defecto): `sabre-integrator`, `amadeus-integrator`, `airgateway-integrator`. Cada uno trae su propio system prompt orientado a su proveedor y referencia las skills correspondientes. Definidos en la clave `agent` de `opencode.json` — llegan a cada dev vía `OPENCODE_CONFIG`, no hace falta ningún paso adicional.
 
-Se activan/desactivan por proyecto en la allow-list (`"agent": { "sabre-integrator": "enabled" }`).
+Se desactivan por proyecto poniendo `"agent": { "amadeus-integrator": { "disable": true } }` en el `opencode.json` del proyecto (el valor tiene que ser el objeto `AgentConfig`, no un string `"enabled"`/`"disabled"` — eso no es válido contra el schema real de OpenCode). Por defecto, los tres agentes de la org están activos en todo proyecto.
 
 ## 8. Comandos custom compartidos
 
