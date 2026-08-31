@@ -59,7 +59,12 @@ const config = {
   },
 
   // ---- Instrucciones organizacionales, siempre cargadas ----
-  "instructions": [`${BASE_URL}/AGENTS.md`],
+  // A diferencia de "skills", NO usamos la URL de Pages aquí: no pudimos
+  // confirmar que "instructions" soporte URLs remotas (cero logs de fetch
+  // en runtime, y el schema del propio binario solo documenta rutas
+  // locales — "instructions": ["AGENTS.md", "docs/style.md"]). Ruta local,
+  // relativa a este mismo fichero una vez clonado — funciona seguro.
+  "instructions": ["AGENTS.md"],
 
   // ---- Permisos por defecto a nivel organización ----
   "permission": {

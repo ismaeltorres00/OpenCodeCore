@@ -102,7 +102,7 @@ Verifica que se resolvió bien sin gastar tokens: `opencode debug config` (confi
 | `enabled_providers` | Solo Anthropic autorizado — evita que alguien cargue credenciales de otro proveedor por error | No pensado para overridear sin aprobación |
 | `default_agent` / `subagent_depth` | Agente por defecto (`build`) y profundidad máx. de subagentes (evita cadenas descontroladas de coste) | Proyecto |
 | `skills` | Catálogo HTTP (ver sección 6) — objeto `{urls: [...]}`, única vía (no hay copia local de respaldo) | — |
-| `instructions` | `AGENTS.md` de este repo, cargado siempre | Proyecto puede añadir instrucciones propias (se suman, no sustituyen) |
+| `instructions` | `AGENTS.md` de este repo, cargado siempre — **ruta local** (`"AGENTS.md"`, relativa a este `opencode.json`), no URL de Pages: no hay evidencia de que `instructions` soporte fetch remoto (a diferencia de `skills`, aquí no hay log de fetch en runtime), así que depende del clon local estando al día (`git pull`) | Proyecto puede añadir instrucciones propias (se suman, no sustituyen) |
 | `permission` | Ver sección 5 | Proyecto |
 | `tools` | `write`/`edit`/`bash` activados por defecto | Proyecto (ej. deshabilitar `write` en repos de solo análisis) |
 | `mcp` | Servidores MCP conocidos por la org (ej. GitLab), **deshabilitados por defecto** | Proyecto activa los que necesite |
