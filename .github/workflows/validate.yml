@@ -39,3 +39,15 @@ jobs:
           if [ -d command ]; then echo "ERROR: existe command/ (layout viejo, singular) junto a commands/"; exit 1; fi
           test -f .nojekyll || { echo "ERROR: falta .nojekyll — sin él, GitHub Pages ignora .well-known/ y reprocesa los .md con Jekyll"; exit 1; }
           echo "Estructura OK"
+
+  validate-powershell-syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: scripts/bootstrap.ps1 parsea sin errores
+        shell: pwsh
+        run: |
+          $errors = $null
+          [void][System.Management.Automation.Language.Parser]::ParseFile("scripts/bootstrap.ps1", [ref]$null, [ref]$errors)
+          if ($errors.Count -gt 0) { $errors; exit 1 }
+          Write-Host "Sintaxis OK"

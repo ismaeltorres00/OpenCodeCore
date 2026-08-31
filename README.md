@@ -65,22 +65,34 @@ Debe devolver `200` y JSON parseable. Si tarda en devolver `200` justo después 
 
 ## 3. Onboarding de un dev (una sola vez)
 
+⚠️ **Hay dos scripts — usa el de tu shell real, no el de tu OS.** `bootstrap.sh` fija `OPENCODE_CONFIG` escribiendo en `~/.bashrc`, que **solo leen shells bash** (Git Bash, WSL, macOS, Linux). Si tu terminal habitual es **PowerShell** (lo normal en un equipo .NET sobre Windows aunque tengas Git Bash instalado), `.bashrc` no se ejecuta nunca y la variable no llega — usa `bootstrap.ps1`, que la fija como variable de entorno de usuario de Windows (la recogen PowerShell, cmd.exe y VS Code). Si dudas, comprueba qué shell abres normalmente antes de elegir.
+
+**Bash / Git Bash / WSL / macOS / Linux:**
 ```bash
 curl -s https://ismaeltorres00.github.io/OpenCodeCore/scripts/bootstrap.sh | bash
 ```
 
-(O clona el repo y ejecuta `scripts/bootstrap.sh` directamente si prefieres revisar el script antes de correrlo — recomendado la primera vez.)
+**PowerShell (Windows nativo):**
+```powershell
+iwr https://ismaeltorres00.github.io/OpenCodeCore/scripts/bootstrap.ps1 -OutFile bootstrap.ps1; .\bootstrap.ps1
+```
 
-Esto hace, de forma idempotente:
+(O clona el repo y ejecuta el script correspondiente directamente si prefieres revisarlo antes de correrlo — recomendado la primera vez.)
 
-1. Clona (o actualiza con `git pull`) este repo en `~/.opencode-org-config`.
-2. Copia `commands/*.md` a `~/.config/opencode/commands/` — ruta real que OpenCode descubre automáticamente.
-3. Copia cada `skills/<name>/` a `~/.config/opencode/skills/<name>/` — mismo layout que exige el mecanismo de fuente HTTP de OpenCode, así que sirve tanto si luego activas el catálogo remoto (sección 6) como si no.
-4. Añade `export OPENCODE_CONFIG="$HOME/.opencode-org-config/opencode.json"` al `.bashrc` del dev.
+Ambos hacen lo mismo, de forma idempotente:
 
-A partir de aquí, cada arranque de OpenCode resuelve automáticamente modelo, permisos, agentes, MCP, instrucciones, etc. definidos en `opencode.json`. **`OPENCODE_CONFIG` se mergea con el global, no lo sustituye** — las preferencias personales de cada dev en `~/.config/opencode/opencode.json` siguen intactas.
+1. Clonan (o actualizan con `git pull`) este repo en `~/.opencode-org-config`.
+2. Copian `commands/*.md` a `~/.config/opencode/commands/` — ruta real que OpenCode descubre automáticamente.
+3. Copian cada `skills/<name>/` a `~/.config/opencode/skills/<name>/` — mismo layout que exige el mecanismo de fuente HTTP de OpenCode, así que sirve tanto si luego activas el catálogo remoto (sección 6) como si no.
+4. Fijan `OPENCODE_CONFIG` apuntando a `opencode.json` del clon — `bootstrap.sh` en `~/.bashrc` (nuevas shells bash), `bootstrap.ps1` como variable de entorno de usuario de Windows (nuevas shells PowerShell/cmd, no hace falta reiniciar sesión de Windows).
 
-**Actualizar = volver a ejecutar `scripts/bootstrap.sh`** (o simplemente `git -C ~/.opencode-org-config pull`, que ya cubre el `opencode.json`; para refrescar `commands/`/`skills/` copiados hace falta re-ejecutar el script completo). No hay push automático a los devs — cada uno sincroniza cuando quiere, o el equipo puede cronearlo.
+**Ninguno de los dos afecta a una terminal ya abierta antes de ejecutarlo** — ábrela de nuevo (o, en PowerShell, `$env:OPENCODE_CONFIG = [Environment]::GetEnvironmentVariable("OPENCODE_CONFIG","User")` para recogerlo sin reabrir).
+
+A partir de ahí, cada arranque de OpenCode resuelve automáticamente modelo, permisos, agentes, MCP, instrucciones, etc. definidos en `opencode.json`. **`OPENCODE_CONFIG` se mergea con el global, no lo sustituye** — las preferencias personales de cada dev en `~/.config/opencode/opencode.json` siguen intactas.
+
+Verifica que se resolvió bien sin gastar tokens: `opencode debug config` (config final mergeada), `opencode debug skill`, `opencode agent list`.
+
+**Actualizar = volver a ejecutar el script** (o `git -C ~/.opencode-org-config pull`, que ya cubre el `opencode.json`; para refrescar `commands/`/`skills/` copiados hace falta el script completo). No hay push automático a los devs — cada uno sincroniza cuando quiere, o el equipo puede cronearlo.
 
 ## 4. Qué centraliza exactamente `opencode.json`
 
@@ -203,7 +215,8 @@ skills/                       → catálogo de skills, una carpeta por skill (in
 commands/                     → comandos custom compartidos (nombre real que descubre OpenCode, plural)
 templates/                    → plantilla completa de opencode.json por proyecto, con todos los overrides posibles
 gen_wellknown.js              → genera opencode.json y .well-known/opencode (editar aquí, no los JSON a mano)
-scripts/bootstrap.sh          → onboarding/actualización de un dev (clona, sincroniza commands/skills, configura OPENCODE_CONFIG)
+scripts/bootstrap.sh          → onboarding/actualización de un dev en bash/Git Bash/WSL/macOS/Linux
+scripts/bootstrap.ps1         → lo mismo, para PowerShell nativo de Windows (bootstrap.sh no sirve ahí, ver sección 3)
 scripts/validate-skills.sh    → validación ejecutada en CI
 CODEOWNERS                    → revisión obligatoria por dominio
 .gitlab-ci.yml                → valida lo mismo que .github/workflows/validate.yml, para cuando esto viva en GitLab
