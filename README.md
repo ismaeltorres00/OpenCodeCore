@@ -83,7 +83,7 @@ Ambos hacen lo mismo, de forma idempotente:
 
 1. Clonan (o actualizan con `git pull`) este repo en `~/.opencode-org-config`.
 2. Copian `commands/*.md` a `~/.config/opencode/commands/` — ruta real que OpenCode descubre automáticamente.
-3. Copian cada `skills/<name>/` a `~/.config/opencode/skills/<name>/` — mismo layout que exige el mecanismo de fuente HTTP de OpenCode, así que sirve tanto si luego activas el catálogo remoto (sección 6) como si no.
+3. **No copian las skills a mano** (a propósito — ver sección 6): `opencode.json` ya declara la fuente HTTP de skills, y OpenCode las descarga y cachea él solo en `~/.config/opencode/skills/`. Copiarlas también a mano ahí pisaba esa caché — lo probamos y así fue como una skill copiada manualmente desapareció sin explicación.
 4. Fijan `OPENCODE_CONFIG` apuntando a `opencode.json` del clon — `bootstrap.sh` en `~/.bashrc` (nuevas shells bash), `bootstrap.ps1` como variable de entorno de usuario de Windows (nuevas shells PowerShell/cmd, no hace falta reiniciar sesión de Windows).
 
 **Ninguno de los dos afecta a una terminal ya abierta antes de ejecutarlo** — ábrela de nuevo (o, en PowerShell, `$env:OPENCODE_CONFIG = [Environment]::GetEnvironmentVariable("OPENCODE_CONFIG","User")` para recogerlo sin reabrir).
@@ -164,7 +164,7 @@ skills/
 
 Al modificar un skill, **incrementa su `version`** — es la señal que le dice a OpenCode que refresque la copia cacheada en cada dev que use la fuente HTTP (`"skills": ["<url>/skills/"]` en `opencode.json`, ya incluido).
 
-Nota: `scripts/bootstrap.sh` **ya copia** `skills/<name>/` a `~/.config/opencode/skills/<name>/` como parte del onboarding, así que las skills funcionan aunque nunca se resuelva el problema de exponer el repo por HTTP sin auth (sección 9). El catálogo HTTP (`"skills"` en `opencode.json`) es un plus — evita tener que re-ejecutar el bootstrap para ver una skill actualizada — pero no es la única vía.
+Nota: las skills viven **solo** en el catálogo HTTP — `scripts/bootstrap.sh`/`.ps1` ya no las copian a mano a `~/.config/opencode/skills/`. Antes lo hacían además de declarar la fuente HTTP, y los dos mecanismos escribiendo en la misma carpeta se pisaban entre sí (una skill copiada a mano desaparecía sola). Un solo mecanismo, más simple de entender y sin ese conflicto: **si el repo no se sirve por HTTP (sección 9), las skills no funcionan**, no hay plan B silencioso.
 
 ## 7. Agentes especializados
 
@@ -186,12 +186,12 @@ No hay mecanismo de fuente HTTP para comandos (solo las skills lo soportan). `sc
 
 ## 9. Si el repo debe ser privado
 
-GitHub Pages solo sirve repos **privados** con plan GitHub Pro, Team o Enterprise Cloud — en plan gratuito, Pages exige que el repo sea público. Esto solo afecta al catálogo de skills por HTTP y a `curl`/CI accediendo a los ficheros sin auth (sección 2/6). **No bloquea el onboarding** (sección 3), que puede seguir usando `git clone`/`git pull` autenticado normal contra un repo privado aunque Pages no esté activo.
+GitHub Pages solo sirve repos **privados** con plan GitHub Pro, Team o Enterprise Cloud — en plan gratuito, Pages exige que el repo sea público. Esto afecta a `curl`/CI accediendo a los ficheros sin auth (sección 2) y, desde que las skills solo viven en el catálogo HTTP (sección 6), **también a las skills**: sin Pages accesible, no se resuelven. **No bloquea `OPENCODE_CONFIG`/`commands/`** (sección 3), que siguen funcionando vía `git clone`/`git pull` autenticado normal contra un repo privado aunque Pages no esté activo — solo las skills dependen de que el HTTP funcione.
 
 Opciones si el contenido no puede ser público:
 1. Repo privado + plan que soporte Pages privado.
 2. Repo de config separado, público-interno, distinto de cualquier repo de código real (los `.md` de este repo son estándares/prompts, no secretos — normalmente asumible).
-3. Sin Pages en absoluto: el bootstrap sigue funcionando igual (usa `git clone` autenticado), simplemente sin el catálogo HTTP de skills — pierdes el refresco sin re-ejecutar el script, no la funcionalidad.
+3. Sin Pages en absoluto: modelo/permisos/agentes/`commands/` siguen funcionando (usan `git clone` autenticado), pero las skills quedan sin efecto hasta resolver el hosting HTTP — no hay plan B local para ellas con el diseño actual.
 
 (Si esto vuelve a vivir en GitLab del equipo en vez de GitHub Pages, la vía allí es un deploy token de solo lectura a nivel de proyecto — ver historial del repo antes de este cambio.)
 

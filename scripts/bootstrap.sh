@@ -9,10 +9,12 @@
 # soporte (en la práctica, OpenCode Enterprise + SSO), algo que este equipo
 # no tiene. La vía soportada y documentada para todos es:
 #   - opencode.json vía la variable de entorno OPENCODE_CONFIG (capa real
-#     del resolver de config, entre global y proyecto).
-#   - commands/ y skills/ copiados a las rutas locales que OpenCode
-#     descubre automáticamente (~/.config/opencode/commands,
-#     ~/.config/opencode/skills/<name>/SKILL-o-<name>.md).
+#     del resolver de config, entre global y proyecto). Ese mismo fichero
+#     ya declara "skills": ["<url-pages>/skills/"], así que las skills
+#     llegan solas por esa vía HTTP — no las copiamos a mano aquí (ver
+#     nota más abajo, antes sí lo hacíamos y pisaba la caché de OpenCode).
+#   - commands/ copiado a la ruta local que OpenCode descubre
+#     (~/.config/opencode/commands) — no hay fuente HTTP para comandos.
 #
 # Este script clona/actualiza el repo y deja todo eso enlazado. Se puede
 # re-ejecutar en cualquier momento (idempotente) para sincronizar cambios.
@@ -44,15 +46,10 @@ mkdir -p "$GLOBAL_DIR/commands"
 echo "-> Sincronizando commands/ -> $GLOBAL_DIR/commands/"
 cp -f "$CLONE_DIR"/commands/*.md "$GLOBAL_DIR/commands/"
 
-# 3. skills/<name>/<name>.md -> ~/.config/opencode/skills/<name>/
-#    (una carpeta por skill, igual que exige el fetch HTTP real de OpenCode)
-mkdir -p "$GLOBAL_DIR/skills"
-echo "-> Sincronizando skills/ -> $GLOBAL_DIR/skills/ (carpeta por skill)"
-for d in "$CLONE_DIR"/skills/*/; do
-  name="$(basename "$d")"
-  mkdir -p "$GLOBAL_DIR/skills/$name"
-  cp -f "$d"*.md "$GLOBAL_DIR/skills/$name/"
-done
+# 3. Las skills NO se copian a mano: opencode.json ya declara la fuente HTTP
+#    ("skills": ["<url>/skills/"]), y OpenCode gestiona su propia caché en
+#    ~/.config/opencode/skills/. Copiar ahí a mano además de eso hacía que
+#    ambos mecanismos escribieran en el mismo sitio y se pisaran entre sí.
 
 # 4. OPENCODE_CONFIG -> opencode.json del repo (modelo, permisos, agentes,
 #    mcp, instructions, etc. — todo lo que no sean ficheros sueltos).

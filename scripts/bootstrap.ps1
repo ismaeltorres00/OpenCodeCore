@@ -42,15 +42,10 @@ New-Item -ItemType Directory -Force -Path $commandsDir | Out-Null
 Write-Host "-> Sincronizando commands/ -> $commandsDir"
 Copy-Item -Path (Join-Path $CloneDir "commands\*.md") -Destination $commandsDir -Force
 
-# 3. skills/<name>/<name>.md -> ~/.config/opencode/skills/<name>/
-$skillsDir = Join-Path $GlobalDir "skills"
-New-Item -ItemType Directory -Force -Path $skillsDir | Out-Null
-Write-Host "-> Sincronizando skills/ -> $skillsDir (carpeta por skill)"
-Get-ChildItem -Path (Join-Path $CloneDir "skills") -Directory | ForEach-Object {
-  $dest = Join-Path $skillsDir $_.Name
-  New-Item -ItemType Directory -Force -Path $dest | Out-Null
-  Copy-Item -Path (Join-Path $_.FullName "*.md") -Destination $dest -Force
-}
+# 3. Las skills NO se copian a mano: opencode.json ya declara la fuente HTTP
+#    ("skills": ["<url>/skills/"]), y OpenCode gestiona su propia cache en
+#    ~/.config/opencode/skills/. Copiar ahi a mano ademas de eso hacia que
+#    ambos mecanismos escribieran en el mismo sitio y se pisaran entre si.
 
 # 4. OPENCODE_CONFIG -> opencode.json del repo, persistente a nivel de usuario de Windows
 $existing = [Environment]::GetEnvironmentVariable("OPENCODE_CONFIG", "User")
