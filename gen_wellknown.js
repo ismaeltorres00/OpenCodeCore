@@ -50,9 +50,13 @@ const config = {
   "subagent_depth": 1,
 
   // ---- Catálogo de skills, deny-by-default a nivel organización ----
-  // Fuente HTTP real de OpenCode: <url>/index.json + <url>/<skill>/<fichero>.
-  // Confirmado contra la doc oficial (opencode.ai/v2/docs/skills).
-  "skills": [`${BASE_URL}/skills/`],
+  // "skills" es un OBJETO {paths, urls}, no un array — confirmado contra el
+  // schema real y autoritativo (https://opencode.ai/config.json, $defs.Config
+  // .properties.skills). Una versión anterior lo tenía como array plano y
+  // OpenCode lo ignoraba en silencio (sin error, sin skills descubiertas).
+  "skills": {
+    "urls": [`${BASE_URL}/skills/`]
+  },
 
   // ---- Instrucciones organizacionales, siempre cargadas ----
   "instructions": [`${BASE_URL}/AGENTS.md`],

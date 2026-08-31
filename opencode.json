@@ -7,9 +7,11 @@
   ],
   "default_agent": "build",
   "subagent_depth": 1,
-  "skills": [
-    "https://ismaeltorres00.github.io/OpenCodeCore/skills/"
-  ],
+  "skills": {
+    "urls": [
+      "https://ismaeltorres00.github.io/OpenCodeCore/skills/"
+    ]
+  },
   "instructions": [
     "https://ismaeltorres00.github.io/OpenCodeCore/AGENTS.md"
   ],
